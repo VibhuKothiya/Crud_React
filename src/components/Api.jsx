@@ -1,87 +1,129 @@
-import React, { useEffect, useRef, useState } from 'react'
-import axios from 'axios'
-import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react'
+import { useRef } from 'react'
 
 const Api = () => {
-    const [data, setData] = useState([]);
+    const [productlist, setProductlist] = useState([]);
+    const [view, setView] = useState({})
 
-    const { id } = useParams()
-    const [values, setValues] = useState({
-        id: id,
-        name: '',
-        email: ''
-    })
+    let ProductName = useRef();
+    let price = useRef();
+    let Desc = useRef();
 
-//GET-DATA
+    //Add-data
+    const add = async () => {
 
-    const fetchData = () => {
-        axios.get('http://localhost:3001/post').then((res) => {
-            setData(res.data);
-        })
+        let product = {
+            ProductName: ProductName.current.value,
+            price: price.current.value,
+            Desc: Desc.current.value
+        }
+
+        let res = await axios.post('http://localhost:4000/products', product);
+        console.log(res);
+
+        setProductlist([...productlist, res.data])
+
+    }
+
+    //Get-data
+    const getProduct = async () => {
+        let result = await axios.get('http://localhost:4000/products');
+        setProductlist(result.data)
     }
 
     useEffect(() => {
-        fetchData()
-    }, []);
+        getProduct();
+    }, [])
 
-    const inputChange = (e) => {
-        setData({
-            ...data,
-            [e.target.name]: e.target.value,
-        })
+    //Delete-data
+    const deleteData = async (id) => {
+        let response = await axios.delete(`http://localhost:4000/products/${id}`);
+        console.log(response);
+        setProductlist(productlist.filter((val) => val.id !== id))
+
     }
 
-//POST-DATA    
-    const handleInput = () => {
-        let NewData = {
-            name: name.current.value,
-            email: email.current.value,
-        }
-
-        axios.post('http://localhost:3001/post', NewData).then((res) => {
-            setData([...data, res.data]);
-        })
+    //View-data
+    const viewData = (index) => {
+        // console.log(index);
+        let user = productlist[index];
+        setView(user)
     }
 
-    const deleteData = (id) => {
-        axios.delete(`http://localhost:3001/post/${id}`).then((res) => {
-            setData(data.filter((val) => val.id !== id))
-
-        });
+    const handleView = (e) => {
+        setView({ ...view, [e.target.name]: e.target.value })
     }
 
-//UPDATE-DATA
-    const updatData = (id) => {
-        axios.get(`http://localhost:3001/post/${id}`).then((res) => {
-            setValues({ ...values, name: res.data.name, email: res.data.email })
-            console.log(res.data);
+
+    // Update-Data
+    const handleUpdate = () => {
+        axios.put(`http://localhost:4000/products/${view.id}`, view).then((res) => {
+            console.log(res);
+            setProductlist(productlist.map((val) => {
+                if (val.id == res.data.id) {
+                    return res.data;
+                }
+                else {
+                    return val;
+                }
+            }))
         })
     }
 
     return (
         <>
-            <lable>Name:</lable><input type="text" name="name" value={values.name} onChange={inputChange} />
-            <lable>Email:</lable><input type="email" name="email" value={values.email} onChange={inputChange} />
-            <button onClick={handleInput}>Add</button>
 
-            <div className='row'>
+            <div>
+                Name:<input type="text" name='ProductName' ref={ProductName} />
+                Price:<input type="number" name='price' ref={price} />
+                Description:<input type="text" name='Desc' ref={Desc} />
+                <button onClick={add}>Add Product</button>
+            </div>
+
+            <div className="row mt-3">
                 {
-                    data?.map((val, ind) => {
+                    productlist.map((val, ind) => {
                         return (
                             <div class="card" style={{ width: '18rem' }}>
                                 <div class="card-body">
-                                    <h5 class="card-title">{val.id}</h5>
-                                    <h6 class="card-subtitle mb-2 text-muted">{val.name}</h6>
-                                    <p class="card-text">{val.email}</p>
-                                    <button onClick={() => { deleteData(val.id) }}>Delet</button>
-                                    <button onClick={() => { updatData(val.id) }}>Update</button>
+                                    <h5 class="card-title">{val.ProductName}</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">{val.price}</h6>
+                                    <p class="card-text">{val.Desc}</p>
+
+                                    <button onClick={() => { viewData(ind) }} type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                        View</button>
+                                    <button onClick={() => { deleteData(val.id) }}>Delete</button>
                                 </div>
                             </div>
-
                         )
                     })
                 }
+            </div>
 
+
+{/* Modal */}
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Update Data</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div >
+                                <label>Name:</label><input type="text" name='ProductName' value={view.ProductName} className='m-2' onChange={handleView} />
+                                <br></br><lable>Price:</lable><input type="number" name='price' value={view.price} className='m-2' onChange={handleView} />
+                                <br></br><lable>Description:</lable><input type="text" name='Desc' value={view.Desc} className='m-2' onChange={handleView} />
+
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" onClick={handleUpdate} class="btn btn-primary" data-bs-dismiss="modal">Update</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </>
     )

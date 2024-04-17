@@ -1,29 +1,28 @@
 {
-  "post": [
+  "products": [
     {
-      "id": "2",
-      "name": "yashika",
-      "email": "yashika@gmail.com"
+      "id": "565f",
+      "ProductName": "Ring",
+      "price": "123",
+      "Desc": "this is watch"
     },
     {
-      "id": "fdc7",
-      "name": "addd",
-      "email": "djs2d"
+      "id": "b5ba",
+      "ProductName": "Mobile",
+      "price": "5000",
+      "Desc": "this is Mobile"
     },
     {
-      "id": "139d",
-      "name": "addd",
-      "email": "djs2d"
+      "id": "a1cb",
+      "ProductName": "Saree",
+      "price": "1000",
+      "Desc": "this is mobile"
     },
     {
-      "id": "be8a",
-      "name": "",
-      "email": ""
-    },
-    {
-      "id": "6c85",
-      "name": "",
-      "email": ""
+      "id": "9604",
+      "ProductName": "snbxs",
+      "price": "233",
+      "Desc": "kdnsnx"
     }
   ]
 }
